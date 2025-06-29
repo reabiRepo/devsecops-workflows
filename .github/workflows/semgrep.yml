@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
      matrix:
-      os: [self-hosted, ubuntu-latest, windows-latest, macos-latest]
+      os: [self-hosted, ubuntu-latest, windows-latest, macos-latest] #de ce que jai compris de la consigne, on veut self-hosted ET github
 
     steps:
       - name: Afficher l'environnement du runner
