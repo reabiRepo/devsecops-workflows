@@ -1,0 +1,45 @@
+name: Reusable - Semgrep & upload SARIF
+on:
+  workflow_call:
+    inputs:
+      semgrep_config:
+        description: "Chemin ou URL des règles"
+        required: false
+        default: "p/default"
+        type: string
+      exclude:
+        description: "Glob patterns à exclure"
+        required: false
+        default: ""
+        type: string
+    
+jobs:
+  semgrep:
+    name: Static Scan
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep
+        env:
+         SEMGREP_CONFIG: ${{ inputs.semgrep_config }}
+         EXCLUDE_PATTERNS: ${{ inputs.exclude }}
+        run: |
+            semgrep --config "$SEMGREP_CONFIG" --sarif --exclude "$EXCLUDE_PATTERNS" > semgrep.sarif
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif

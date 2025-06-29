@@ -1,0 +1,19 @@
+name: CI –
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [main]
+permissions:
+  security-events: write
+  contents: read
+jobs:
+  security_scan:
+    uses: ./.github/workflows/semgrep.yml
+    with:
+      semgrep_config: "p/ci"
+      exclude: | 
+        **/dist/** #Ces files ne sont pas pertinents pour l'analyse de sécurité
+        **/build/** 
+        **/node_modules/** 
+    secrets: inherit

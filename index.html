@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Vulnerable Front</title>
+</head>
+
+<body>
+    <h1>Recherche utilisateur</h1>
+    <form id="searchForm">
+        <input type="text" id="username" name="username" placeholder="nom d'utilisateur" />
+        <button type="submit">Rechercher</button>
+    </form>
+    <div id="result"></div>
+    <script>
+        const form = document.getElementById('searchForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const res = await fetch(`/user?username=${username}`);
+            const data = await res.json();
+            document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        });
+    </script>
+</body>
+
+</html>
