@@ -32,14 +32,12 @@ jobs:
         run: pip install semgrep
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
         env:
-         SEMGREP_SEND_METRICS: "off"
-        with:
-         config: ${{ inputs.semgrep_config }}
-         generateSarif: true
+          SEMGREP_CONFIG: ${{ inputs.semgrep_config }}
+        run: |
+          semgrep --config "$SEMGREP_CONFIG" --sarif > semgrep.sarif
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
-         sarif_file: semgrep.sarif
+          sarif_file: semgrep.sarif
