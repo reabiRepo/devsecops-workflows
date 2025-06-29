@@ -1,4 +1,4 @@
-name: CI –
+name: CI
 on:
   push:
     branches: [ main ]
@@ -13,7 +13,7 @@ jobs:
     with:
       semgrep_config: "p/ci"
       exclude: | 
-        **/dist/** #Ces files ne sont pas pertinents pour l'analyse de sécurité
+        **/dist/** #examples de files qui ne sont pas pertinents pour l'analyse de sécurité
         **/build/** 
         **/node_modules/** 
     secrets: inherit
