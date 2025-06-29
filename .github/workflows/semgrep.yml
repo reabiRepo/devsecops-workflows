@@ -26,6 +26,12 @@ jobs:
       os: [self-hosted, ubuntu-latest, windows-latest, macos-latest] #de ce que jai compris de la consigne, on veut self-hosted ET github
 
     steps:
+      - name: Clean diagnostic logs to avoid conflicts (self-hosted only)
+        if: contains(runner.labels, 'self-hosted')
+        run: |
+          echo "Cleaning old _diag log files on self-hosted runner..."
+          find "$RUNNER_TOOL_CACHE/../_diag/pages" -type f -name "*.log" -delete 2>/dev/null || true
+
       - name: Afficher l'environnement du runner
         run: |
          echo "Runner Name: $RUNNER_NAME"
