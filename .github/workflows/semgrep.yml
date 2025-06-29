@@ -20,7 +20,7 @@ permissions:
 jobs:
   semgrep:
     name: Static Scan
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     steps:
       - name: Afficher l'environnement du runner
         run: |
