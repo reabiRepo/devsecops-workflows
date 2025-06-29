@@ -5,14 +5,13 @@ on:
       semgrep_config:
         description: "Chemin ou URL des règles"
         required: false
-        default: "p/default"
+        default: "p/ci"
         type: string
       exclude:
         description: "Glob patterns à exclure"
         required: false
         default: ""
         type: string
-    
 jobs:
   semgrep:
     name: Static Scan
@@ -33,13 +32,14 @@ jobs:
         run: pip install semgrep
 
       - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
         env:
-         SEMGREP_CONFIG: ${{ inputs.semgrep_config }}
-         EXCLUDE_PATTERNS: ${{ inputs.exclude }}
-        run: |
-            semgrep --config "$SEMGREP_CONFIG" --sarif --exclude "$EXCLUDE_PATTERNS" > semgrep.sarif
+         SEMGREP_SEND_METRICS: "off"
+        with:
+         config: ${{ inputs.semgrep_config }}
+         generateSarif: true
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: semgrep.sarif
+         sarif_file: semgrep.sarif
