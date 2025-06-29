@@ -1,36 +1,25 @@
-name: Reusable - Semgrep & upload SARIF
+name: Semgrep Scan with Self-Hosted Fallback
+
 on:
-  workflow_call:
-    inputs:
-      semgrep_config:
-        description: "Chemin ou URL des règles"
-        required: false
-        default: "p/ci"
-        type: string
-      exclude:
-        description: "Glob patterns à exclure"
-        required: false
-        default: ""
-        type: string
+  push:
+    branches: [main]
+  pull_request:
 
 permissions:
   contents: read
   security-events: write
 
 jobs:
-  semgrep:
-    name: Static Scan
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  semgrep_self_hosted:
+    name: Semgrep (Self-Hosted Preferred)
+    runs-on: self-hosted
+    continue-on-error: true
+    outputs:
+      result: ${{ steps.set_result.outputs.result }}
     steps:
-      - name: Afficher l'environnement du runner
-        run: |
-         echo "Runner Name: $RUNNER_NAME"
-         echo "OS: $RUNNER_OS"
-         echo "Architecture: $RUNNER_ARCH"
-         echo "Runner Labels: $RUNNER_LABELS"
+      - name: Set result to success
+        id: set_result
+        run: echo "result=success" >> $GITHUB_OUTPUT
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,10 +34,36 @@ jobs:
 
       - name: Run Semgrep
         continue-on-error: true
-        env:
-          SEMGREP_CONFIG: ${{ inputs.semgrep_config }}
         run: |
-          semgrep --config "$SEMGREP_CONFIG" --sarif > semgrep.sarif
+          semgrep --config=p/ci --sarif > semgrep.sarif
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+  semgrep_fallback:
+    name: Semgrep (Fallback to GitHub Runner)
+    needs: semgrep_self_hosted
+    if: needs.semgrep_self_hosted.result != 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep
+        continue-on-error: true
+        run: |
+          semgrep --config=p/ci --sarif > semgrep.sarif
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
